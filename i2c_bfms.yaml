@@ -27,6 +27,8 @@ interface-types:
                 parameters:
                   - name: data
                     type: uint8
+                  - name: start
+                    type: uint8
                     
             - _ack_cmd:
                 is-export: False
@@ -36,5 +38,10 @@ interface-types:
                     type: uint8
                   - name: ack
                     type: uint8
+                    
+            - _reset:
+                is-export: False
+                is-blocking: False
+                
                     
 

@@ -14,6 +14,12 @@ async def entry(dut):
 
     bfm = cocotb_compat.find_ifinst(".*u_bfm")
 
-    print("--> _set_prescale", flush=True)    
-    await bfm._set_prescale(100)
-    print("<-- _set_prescale", flush=True)    
+#    print("--> _set_prescale", flush=True)    
+#    await bfm._set_prescale(100)
+#    print("<-- _set_prescale", flush=True)    
+
+    await bfm.write(0x10, [1, 2, 3, 4])
+    
+    data = await bfm.read(0x40, 10)
+    
+    print("data=%s" % str(data), flush=True)

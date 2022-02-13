@@ -32,9 +32,24 @@ module i2c_initiator_tb(input clock);
 	assign clock = clock_r;
 `endif
 	
-	wire reset = 0;
+	reg reset = 0;
+	reg[7:0] reset_cnt = 0;
 	wire scl_i, scl_o, scl_en_o;
 	wire sda_i, sda_o, sda_en_o;
+	
+	assign scl_i = (!scl_en_o)?scl_o:1'b1;
+	assign sda_i = (!sda_en_o)?sda_o:1'b1;
+	
+	always @(posedge clock) begin
+		if (reset_cnt == 40) begin
+			reset <= 1'b0;
+		end else begin
+			if (reset_cnt == 1) begin
+				reset <= 1'b1;
+			end 
+			reset_cnt <= reset_cnt + 1;
+		end
+	end
 
 	i2c_initiator_bfm_sim u_bfm (
 			.clock(	clock),
