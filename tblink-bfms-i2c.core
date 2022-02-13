@@ -1,0 +1,29 @@
+CAPI=2:
+#****************************************************************************
+#* tblink-bfms-i2c.core
+#****************************************************************************
+
+name: tblink-bfms::i2c:0.0.1
+
+filesets:
+  vlog:
+    files:
+      - backends/i2c_initiator_bfm_vl.sv
+    file_type: verilogSource
+  sv:
+    files:
+      - backends/i2c_initiator_bfm_sv.sv
+    file_type: systemVerilogSource
+    
+#  sv-uvm:
+#    files:
+#      - frontends/uvm/rv_agent_pkg.sv
+#    file_type: systemVerilogSource
+    
+targets:
+  default:
+    filesets:
+      - "!sv ? (vlog)"
+      - "sv ? (sv)"
+#      - "uvm ? (sv-uvm)"
+

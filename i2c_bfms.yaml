@@ -1,0 +1,40 @@
+
+interface-types:
+    - i2c_bfms.initiator:
+        methods:
+            - _set_prescale:
+                is-export: True
+                is-blocking: True
+                parameters:
+                  - name: prescale
+                    type: uint16
+                    
+            - _cmd_start:
+                is-export: True
+                is-blocking: True
+                
+            - _cmd_stop:
+                is-export: True
+                is-blocking: True
+                
+            - _cmd_read:
+                is-export: True
+                is-blocking: True
+                
+            - _cmd_write:
+                is-export: True
+                is-blocking: True
+                parameters:
+                  - name: data
+                    type: uint8
+                    
+            - _ack_cmd:
+                is-export: False
+                is-blocking: False
+                parameters:
+                  - name: data
+                    type: uint8
+                  - name: ack
+                    type: uint8
+                    
+

@@ -1,0 +1,102 @@
+/****************************************************************************
+ * i2c_initiator_bfm_sim.sv
+ ****************************************************************************/
+{%
+	set tblink_generators = ({
+		"i2c_initiator_bfm_sv.sv" : "tblink.bfm_impl.sv",
+		"i2c_initiator_bfm_vl.sv" : "tblink.bfm_impl.vl"
+		})
+ %}
+ 
+module i2c_initiator_bfm_sim (
+	input				clock,
+	input				reset,
+	input				scl_i,
+	output				scl_o,
+	output				scl_en_o,
+	input				sda_i,
+	output				sda_o,
+	output				sda_en_o
+	);
+	
+	// registers
+	reg  [15:0] prer; // clock prescale register
+	reg  [ 7:0] ctr;  // control register
+	reg  [ 7:0] txr;  // transmit register
+	wire [ 7:0] rxr;  // receive register
+	reg  [ 7:0] cr;   // command register
+	wire [ 7:0] sr;   // status register
+
+	reg cmd_start;
+	reg cmd_stop;
+	reg cmd_read;
+	reg cmd_write;
+	reg[7:0] dat_write;
+	wire[7:0] dat_read;
+	reg xmit_ack; // ack bit sent with data
+	wire recv_ack; // ack received with data
+	
+	wire i2c_busy;
+	wire i2c_al;
+	
+	// hookup byte controller block
+	i2c_initiator_byte_ctrl byte_controller (
+		.clock    ( clock     ),
+		.reset    ( reset     ),
+		.ena      ( core_en      ),
+		.clk_cnt  ( prer         ),
+		.start    ( cmd_start    ),
+		.stop     ( cmd_stop     ),
+		.read     ( cmd_read     ),
+		.write    ( cmd_write    ),
+		.ack_in   ( xmit_ack     ),
+		.din      ( dat_write    ),
+		.cmd_ack  ( cmd_ack      ),
+		.ack_out  ( recv_ack     ),
+		.dout     ( dat_read     ),
+		.i2c_busy ( i2c_busy     ),
+		.i2c_al   ( i2c_al       ),
+		.scl_i    ( scl_i    ),
+		.scl_o    ( scl_o    ),
+		.scl_oen  ( scl_en_o ),
+		.sda_i    ( sda_i    ),
+		.sda_o    ( sda_o    ),
+		.sda_oen  ( sda_en_o )
+	);	
+
+	task _set_prescale(input reg[15:0] v);
+	begin
+		$display("_set_prescale: %0d", v);
+		prer = v;
+	end
+	endtask
+	
+	task _cmd_start;
+	begin
+	end
+	endtask
+	
+	task _cmd_stop;
+	begin
+	end
+	endtask
+	
+	task _cmd_read;
+	begin
+	end
+	endtask
+	
+	task _cmd_write(input reg[7:0] data);
+	begin
+	end
+	endtask
+	
+
+// Note: Begin Generated Content. Do Not Edit
+{{ tblink_gen(
+	iftype="i2c_bfms.initiator",
+	is_mirror=False,
+	kind="bfm") }}
+// Note: End Generated Content.
+	
+endmodule
