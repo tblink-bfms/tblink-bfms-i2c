@@ -35,6 +35,7 @@ module i2c_initiator_bfm_sim (
 	reg cmd_read_v = 1'b0;
 	reg cmd_write = 1'b0;
 	reg cmd_write_v = 1'b0;
+	reg cmd_xmit_ack_v = 1'b0;
 	reg[7:0] dat_write = 8'b0;
 	wire[7:0] dat_read;
 	reg xmit_ack = 1'b1; // ack bit sent with data
@@ -60,15 +61,17 @@ module i2c_initiator_bfm_sim (
 			
 			case (state)
 			0: begin
-				if (cmd_stop_v | cmd_read_v | cmd_write_v) begin
+				if (cmd_read_v | cmd_write_v) begin
 					cmd_start <= cmd_start_v;
 					cmd_stop <= cmd_stop_v;
 					cmd_read <= cmd_read_v;
 					cmd_write <= cmd_write_v;
+					xmit_ack <= cmd_xmit_ack_v;
 					cmd_start_v = 0;
 					cmd_stop_v = 0;
 					cmd_read_v = 0;
 					cmd_write_v = 0;
+					cmd_xmit_ack_v = 1'b0;
 					state <= 1;
 				end
 			end
@@ -78,6 +81,7 @@ module i2c_initiator_bfm_sim (
 					cmd_stop <= 1'b0;
 					cmd_read <= 1'b0;
 					cmd_write <= 1'b0;
+					$display("Send ack: 'h%02h", dat_read);
 					_ack_cmd(dat_read, 0);
 					state <= 0;
 				end
@@ -113,36 +117,29 @@ module i2c_initiator_bfm_sim (
 
 	task _set_prescale(input reg[15:0] v);
 	begin
-		$display("_set_prescale: %0d", v);
 		prer = v;
 	end
 	endtask
 	
-	task _cmd_start;
-	begin
-		cmd_start_v = 1'b1;
-	end
-	endtask
-	
-	task _cmd_stop;
-	begin
-		cmd_stop_v = 1'b1;
-	end
-	endtask
-	
-	task _cmd_read;
+	task _cmd_read(
+		input reg[7:0] ack,
+		input reg[7:0] stop);
 	begin
 		cmd_read_v = 1'b1;
+		cmd_xmit_ack_v = ack[0];
+		cmd_stop_v = stop[0];
 	end
 	endtask
 	
 	task _cmd_write(
 		input reg[7:0] data,
-		input reg[7:0] start);
+		input reg[7:0] start,
+		input reg[7:0] stop);
 	begin
 		cmd_write_v = 1'b1;
 		dat_write = data;
 		cmd_start_v = start;
+		cmd_xmit_ack_v = 1'b0;
 	end
 	endtask
 	

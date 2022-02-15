@@ -26,6 +26,9 @@ MKDV_COCOTB_MODULE = smoke_initiator
 
 MKDV_BUILD_DEPS += gen-bfms
 MKDV_VL_SRCS += $(TEST_DIR)/i2c_initiator_tb.sv
+MKDV_VL_SRCS += $(TEST_DIR)/i2cSlave.v $(TEST_DIR)/registerInterface.v 
+MKDV_VL_SRCS += $(TEST_DIR)/serialInterface.v
+MKDV_VL_INCDIRS += $(TEST_DIR)
 TOP_MODULE=i2c_initiator_tb
 
 VLSIM_CLKSPEC += clock=10ns

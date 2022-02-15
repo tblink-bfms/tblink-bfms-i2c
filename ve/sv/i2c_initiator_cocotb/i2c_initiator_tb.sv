@@ -37,8 +37,6 @@ module i2c_initiator_tb(input clock);
 	wire scl_i, scl_o, scl_en_o;
 	wire sda_i, sda_o, sda_en_o;
 	
-	assign scl_i = (!scl_en_o)?scl_o:1'b1;
-	assign sda_i = (!sda_en_o)?sda_o:1'b1;
 	
 	always @(posedge clock) begin
 		if (reset_cnt == 40) begin
@@ -61,6 +59,40 @@ module i2c_initiator_tb(input clock);
 			.sda_o(	sda_o),
 			.sda_en_o(sda_en_o)
 			);	
+
+	wire targ_sda_o;
+	wire targ_sda_i;
+	wire targ_sda_en_o;
+	wire targ_scl_i;
+	wire[7:0] myReg0, myReg1, myReg2, myReg3;
+	wire[7:0] myReg4, myReg5, myReg6, myReg7;
+	assign myReg4 = 20;
+	assign myReg5 = 21;
+	assign myReg6 = 22;
+	assign myReg7 = 23;
+	i2cSlave u_target (
+		.clk       (clock    ), 
+		.rst       (reset    ), 
+		.sda_o     (targ_sda_o    ), 
+		.sda_i     (targ_sda_i    ), 
+		.sda_en_o  (targ_sda_en_o ), 
+//		.scl_o     (scl_o    ), 
+		.scl_i     (targ_scl_i    ), 
+//		.scl_en_o  (scl_en_o ), 
+		.myReg0    (myReg0   ), 
+		.myReg1    (myReg1   ), 
+		.myReg2    (myReg2   ), 
+		.myReg3    (myReg3   ), 
+		.myReg4    (myReg4   ), 
+		.myReg5    (myReg5   ), 
+		.myReg6    (myReg6   ), 
+		.myReg7    (myReg7   ));
+	
+	assign scl_i = (!scl_en_o)?scl_o:1'b1;
+	assign sda_i = (!sda_en_o)?sda_o:targ_sda_o;
+	
+	assign targ_sda_i = (!targ_sda_en_o)?targ_sda_o:(sda_o | sda_en_o);
+	assign targ_scl_i = (!scl_en_o)?scl_o:1'b1;
 
 endmodule
 

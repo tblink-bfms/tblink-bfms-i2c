@@ -18,7 +18,7 @@ class I2cInitiatorBfm(object):
         self._ack = 0
         pass
     
-    async def write(self, addr, data):
+    async def memwrite(self, dev_a, mem_a, data):
         await self._lock.acquire()
 
         
@@ -26,25 +26,31 @@ class I2cInitiatorBfm(object):
             await self._is_reset_ev.wait()
             self._is_reset_ev.clear()
         
-        a_data = ((addr & 0x7F) << 1)
-        await self._cmd_write(a_data, 1)
+        a_data = (((dev_a & 0x7F) << 1) | 0)
+        await self._cmd_write(a_data, 1, 0)
         
         await self._ev.wait()
         self._ev.clear()
         
-        for d in data:
-            await self._cmd_write(d, 0)
+        a_data = (mem_a & 0x7F)
+        await self._cmd_write(a_data, 0, 0)
+        
+        await self._ev.wait()
+        self._ev.clear()
+        
+        for i, d in enumerate(data):
+            if i+1 == len(data):
+                stop = 1
+            else:
+                stop = 0;
+            await self._cmd_write(d, 0, stop)
             
             await self._ev.wait()
             self._ev.clear()
             
-        await self._cmd_stop()
-        await self._ev.wait()
-        self._ev.clear()
-        
         self._lock.release()
         
-    async def read(self, addr, sz):
+    async def memread(self, dev_a, mem_a, sz):
         await self._lock.acquire()
         
         if not self._is_reset:
@@ -53,24 +59,37 @@ class I2cInitiatorBfm(object):
             
         ret = []
             
-        a_data = ((addr & 0x7F) << 1)
-        await self._cmd_write(a_data, 1)
+        a_data = (((dev_a & 0x7F) << 1) | 0)
+        await self._cmd_write(a_data, 1, 0)
         
         await self._ev.wait()
         self._ev.clear()
         
-        for _ in range(sz):
-            await self._cmd_read()
+        a_data = (mem_a & 0x7F)
+        await self._cmd_write(a_data, 0, 0)
+        
+        await self._ev.wait()
+        self._ev.clear()
+        
+        a_data = (((dev_a & 0x7F) << 1) | 1)
+        await self._cmd_write(a_data, 1, 0)
+        
+        await self._ev.wait()
+        self._ev.clear()
+        
+        for i in range(sz):
+            if i+1 == sz:
+                ack = 1
+            else:
+                ack = 0
+                
+            await self._cmd_read(ack, 1)
             
             await self._ev.wait()
             self._ev.clear()
             
             ret.append(self._data)
             
-        await self._cmd_stop()
-        await self._ev.wait()
-        self._ev.clear()
-        
         self._lock.release()
             
         return ret
@@ -82,31 +101,22 @@ class I2cInitiatorBfm(object):
         pass
     
     @tblink_rpc.exptask
-    def _cmd_start(self):
+    def _cmd_read(self, ack : ctypes.c_uint8, stop : ctypes.c_uint8):
         pass
     
     @tblink_rpc.exptask
-    def _cmd_stop(self):
-        pass
-    
-    @tblink_rpc.exptask
-    def _cmd_read(self):
-        pass
-    
-    @tblink_rpc.exptask
-    def _cmd_write(self, data : ctypes.c_uint8, start : ctypes.c_uint8):
+    def _cmd_write(self, data : ctypes.c_uint8, start : ctypes.c_uint8, stop : ctypes.c_uint8):
         pass
     
     @tblink_rpc.impfunc
     def _ack_cmd(self, data : ctypes.c_uint8, ack : ctypes.c_uint8):
-        self._ev.set() 
         self._data = data
         self._ack = ack
+        self._ev.set() 
         pass
     
     @tblink_rpc.impfunc
     def _reset(self):
-        print("_reset", flush=True)
         self._is_reset = True
         self._is_reset_ev.set()
         

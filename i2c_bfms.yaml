@@ -9,17 +9,14 @@ interface-types:
                   - name: prescale
                     type: uint16
                     
-            - _cmd_start:
-                is-export: True
-                is-blocking: True
-                
-            - _cmd_stop:
-                is-export: True
-                is-blocking: True
-                
             - _cmd_read:
                 is-export: True
                 is-blocking: True
+                parameters:
+                  - name: ack
+                    type: uint8
+                  - name: stop
+                    type: uint8
                 
             - _cmd_write:
                 is-export: True
@@ -28,6 +25,8 @@ interface-types:
                   - name: data
                     type: uint8
                   - name: start
+                    type: uint8
+                  - name: stop
                     type: uint8
                     
             - _ack_cmd:
